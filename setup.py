@@ -75,6 +75,15 @@ else:
         arch_sse = []
     arch_basic = []
 
+# Give Deltakit-Stim a private pybind11 internals registry. The macOS wheels bundle
+# their own libc++ (LLVM 16), but the default registry ID still reads
+# "system_libcpp_abi1", so it is shared with extensions built against the system
+# libc++ (e.g. matplotlib, contourpy). Whichever module is imported first owns the
+# shared registry, and exceptions raised by Deltakit-Stim (such as
+# `pybind11::stop_iteration`) are then not translated across the two C++ runtimes,
+# surfacing as "RuntimeError: Caught an unknown exception!" (see Deltakit/deltakit#310).
+common_compile_args.append('-DPYBIND11_COMPILER_TYPE="_deltakit_stim"')
+
 # Always build the basic extensions
 ext_modules = []
 
